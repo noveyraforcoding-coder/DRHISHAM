@@ -1497,3 +1497,50 @@ a:hover {
 .items-center { align-items: center; }
 .justify-between { justify-content: space-between; }
 .hidden { display: none !important; }
+
+/* Developer Credit Footer */
+.app-footer {
+  text-align: center;
+  padding: 30px 20px;
+  background-color: var(--surface);
+  border-top: 1px solid var(--border-color);
+  margin-top: auto;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+.developer-credit {
+  margin-top: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+}
+
+.developer-credit a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  transition: all 0.3s ease;
+  padding: 8px 15px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.developer-credit a span {
+  background: linear-gradient(135deg, #00f2fe, #4facfe);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-left: 6px;
+  font-weight: 800;
+}
+
+.developer-credit a:hover {
+  background: rgba(255, 255, 255, 0.08);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 15px rgba(0, 242, 254, 0.15);
+  border-color: rgba(79, 172, 254, 0.3);
+}

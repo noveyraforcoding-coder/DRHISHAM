@@ -9,14 +9,14 @@ import uuid
 # ==========================================
 
 # 1. إعدادات الاختبار
-URL = "http://localhost:3000/api/scan-attendance" # يمكنك تغييره لرابط Vercel لاحقاً
+URL = "https://drhisham.vercel.app/api/scan-attendance" # يمكنك تغييره لرابط Vercel لاحقاً
 CONCURRENT_USERS = 500 # عدد الطلاب اللي بيسجلوا في نفس اللحظة
 
 # 2. بيانات المحاضرة (انسخها من الـ URL الخاص بالـ QR)
 # افتح لوحة التحكم، اعمل محاضرة، وانسخ البيانات دي من رابط الـ QR اللي بيطلع
-LECTURE_ID = "YOUR_LECTURE_ID" 
-LECTURE_DATE = "2024-09-29"
-SIGNATURE = "YOUR_SIGNATURE"
+LECTURE_ID = "8feb79cf-787c-4b49-8e12-911291d0bfa0" 
+LECTURE_DATE = "2026-09-28"
+SIGNATURE = "f1bb2737185878ec"
 
 async def submit_attendance(session, student_id):
     # إنشاء بيانات طالب عشوائية
@@ -38,13 +38,13 @@ async def submit_attendance(session, student_id):
             status = response.status
             text = await response.text()
             latency = time.time() - start_time
-            return {"status": status, "latency": latency}
+            return {"status": status, "latency": latency, "text": text}
     except Exception as e:
-        return {"status": "ERROR", "latency": time.time() - start_time, "error": str(e)}
+        return {"status": "ERROR", "latency": time.time() - start_time, "text": str(e)}
 
 async def main():
-    print(f"🚀 بدء اختبار الضغط لعدد {CONCURRENT_USERS} طالب في نفس اللحظة...")
-    print(f"الهدف: {URL}")
+    print(f"Starting load test for {CONCURRENT_USERS} students concurrently...")
+    print(f"Target: {URL}")
     
     start_time = time.time()
     
@@ -71,6 +71,12 @@ async def main():
     print(f"إجمالي الطلبات: {CONCURRENT_USERS}")
     print(f"✅ الطلبات الناجحة (200 OK): {success_count}")
     print(f"❌ الطلبات الفاشلة: {failed_count}")
+    
+    if failed_count > 0:
+        sample_error = next((r for r in results if r["status"] != 200), None)
+        if sample_error:
+            print(f"⚠️ سبب الفشل (عينة): {sample_error['status']} - {sample_error['text'][:150]}")
+            
     print(f"⏱️ الوقت الإجمالي للاختبار: {total_time:.2f} ثانية")
     print(f"⚡ متوسط سرعة الرد: {avg_latency*1000:.2f} مللي ثانية")
     print(f"🐢 أقصى تأخير (أسوأ حالة): {max_latency*1000:.2f} مللي ثانية")
