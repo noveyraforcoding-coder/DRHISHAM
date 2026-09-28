@@ -1,0 +1,343 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="لوحة تحكم الدكتور - نظام حضور وغياب الطلاب - مقرر الحرارة">
+  <meta name="theme-color" content="#0a1628">
+  <title>لوحة التحكم | د. هشام هاشم - نظام الحضور</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="/style.css">
+  
+  <!-- QR Code Generator -->
+  <script src="/lib/qrcode.min.js"></script>
+  
+  <!-- Excel Export -->
+  <script src="/lib/xlsx.full.min.js"></script>
+  
+  <!-- PDF Export -->
+  <script src="/lib/jspdf.umd.min.js"></script>
+  <script src="/lib/jspdf.plugin.autotable.min.js"></script>
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- =============================================
+         Login Screen
+         ============================================= -->
+    <div id="login-screen" class="login-container">
+      <div class="card login-card">
+        <div class="header-logo">🔐</div>
+        <h1>لوحة التحكم</h1>
+        <p class="login-subtitle">د. هشام هاشم - مقرر الحرارة<br>كلية العلوم - جامعة طنطا</p>
+        
+        <form onsubmit="handleLogin(event)">
+          <div class="form-group">
+            <label class="form-label" for="login-password">كلمة المرور</label>
+            <input 
+              type="password" 
+              id="login-password" 
+              class="form-input"
+              placeholder="أدخل كلمة المرور"
+              required
+              autocomplete="current-password"
+            >
+          </div>
+          <div id="login-error"></div>
+          <button type="submit" id="btn-login" class="btn btn-primary btn-lg btn-block">
+            🔓 دخول
+          </button>
+        </form>
+
+        <div class="mt-20 text-center">
+          <a href="/index.html" class="nav-link">← العودة لصفحة الطالب</a>
+        </div>
+      </div>
+    </div>
+
+    <!-- =============================================
+         Dashboard (Hidden until login)
+         ============================================= -->
+    <div id="dashboard-screen" class="hidden">
+      <!-- Header -->
+      <header class="app-header">
+        <div class="header-content">
+          <div class="header-brand">
+            <div class="header-logo">ح</div>
+            <div class="header-titles">
+              <h1>لوحة التحكم</h1>
+              <span class="subtitle">د. هشام هاشم - مقرر الحرارة</span>
+            </div>
+          </div>
+          <div class="header-nav">
+            <a href="/index.html" class="nav-link">📱 صفحة الطالب</a>
+            <button class="btn btn-ghost" onclick="handleLogout()">🚪 خروج</button>
+          </div>
+        </div>
+      </header>
+
+      <main class="app-container dashboard-content">
+        
+        <!-- Stats Overview -->
+        <div id="stats-overview" class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon blue">👥</div>
+            <div class="stat-content">
+              <div class="stat-value" id="stat-students">-</div>
+              <div class="stat-label">إجمالي الطلاب المسجلين</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon gold">📚</div>
+            <div class="stat-content">
+              <div class="stat-value" id="stat-lectures">-</div>
+              <div class="stat-label">إجمالي المحاضرات</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon green">✅</div>
+            <div class="stat-content">
+              <div class="stat-value" id="stat-attendance">-</div>
+              <div class="stat-label">سجلات الحضور</div>
+            </div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon red">📊</div>
+            <div class="stat-content">
+              <div class="stat-value" id="stat-rate">-</div>
+              <div class="stat-label">نسبة الحضور العامة</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs">
+          <button class="tab-btn active" onclick="switchTab('tab-lectures')">📚 المحاضرات</button>
+          <button class="tab-btn" onclick="switchTab('tab-audit')">📋 جرد الغياب</button>
+          <button class="tab-btn" onclick="switchTab('tab-analytics')">📊 التحليلات</button>
+          <button class="tab-btn" onclick="switchTab('tab-export')">📥 تصدير البيانات</button>
+        </div>
+
+        <!-- =============================================
+             Tab 1: Lectures Management
+             ============================================= -->
+        <div id="tab-lectures" class="tab-content active">
+          <div class="section-title">
+            <h2>📚 إدارة المحاضرات</h2>
+            <div class="actions">
+              <button class="btn btn-primary" onclick="showCreateLectureModal()">
+                ➕ إنشاء محاضرة جديدة
+              </button>
+            </div>
+          </div>
+
+          <div id="lectures-list">
+            <div class="empty-state">
+              <div class="empty-icon">📚</div>
+              <p>جاري تحميل المحاضرات...</p>
+            </div>
+          </div>
+        </div>
+
+        <!-- =============================================
+             Tab 2: Absence Audit (جرد الغياب)
+             ============================================= -->
+        <div id="tab-audit" class="tab-content">
+          <div class="section-title">
+            <h2>📋 جرد الغياب</h2>
+          </div>
+
+          <div class="card mb-20">
+            <div class="form-group">
+              <label class="form-label">اختر المحاضرة</label>
+              <select id="audit-lecture-select" class="form-input" onchange="runAudit()">
+                <option value="">-- اختر محاضرة --</option>
+              </select>
+            </div>
+          </div>
+
+          <div id="audit-results"></div>
+        </div>
+
+        <!-- =============================================
+             Tab 3: Analytics
+             ============================================= -->
+        <div id="tab-analytics" class="tab-content">
+          <div class="section-title">
+            <h2>📊 تحليلات الحضور والغياب</h2>
+            <div class="actions">
+              <button class="btn btn-outline btn-sm" onclick="loadStats()">🔄 تحديث</button>
+            </div>
+          </div>
+
+          <!-- Lecture Attendance Chart -->
+          <div class="card mb-20">
+            <div class="card-header">
+              <h3><span class="icon">📈</span> نسبة الحضور لكل محاضرة</h3>
+            </div>
+            <div id="lecture-chart" class="chart-bars" style="min-height: 200px;">
+              <div class="empty-state"><p>جاري التحميل...</p></div>
+            </div>
+            <div class="chart-legend">
+              <div class="chart-legend-item">
+                <div class="chart-legend-dot" style="background: var(--primary-400);"></div>
+                عدد الحضور
+              </div>
+            </div>
+          </div>
+
+          <div class="grid-2">
+            <!-- Top Attending -->
+            <div class="card">
+              <div class="card-header">
+                <h3><span class="icon">🏆</span> الأكثر حضوراً</h3>
+              </div>
+              <div id="top-attending">
+                <div class="empty-state"><p>جاري التحميل...</p></div>
+              </div>
+            </div>
+
+            <!-- Most Absent -->
+            <div class="card">
+              <div class="card-header">
+                <h3><span class="icon">⚠️</span> الأكثر غياباً</h3>
+              </div>
+              <div id="most-absent">
+                <div class="empty-state"><p>جاري التحميل...</p></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- =============================================
+             Tab 4: Export
+             ============================================= -->
+        <div id="tab-export" class="tab-content">
+          <div class="section-title">
+            <h2>📥 تصدير البيانات</h2>
+          </div>
+
+          <div class="card mb-20">
+            <div class="card-header">
+              <h3><span class="icon">📄</span> تصدير حضور محاضرة</h3>
+            </div>
+            <div class="form-group">
+              <label class="form-label">اختر المحاضرة</label>
+              <select id="export-lecture-select" class="form-input">
+                <option value="">-- اختر محاضرة --</option>
+              </select>
+            </div>
+            <div class="flex flex-wrap gap-10">
+              <button class="btn btn-success" onclick="exportToExcel()">
+                📊 تصدير Excel
+              </button>
+              <button class="btn btn-danger" onclick="exportToPDF()">
+                📄 تصدير PDF
+              </button>
+            </div>
+          </div>
+
+          <div class="card">
+            <div class="card-header">
+              <h3><span class="icon">📋</span> تصدير كشف شامل (جميع المحاضرات)</h3>
+            </div>
+            <div class="flex flex-wrap gap-10">
+              <button class="btn btn-success" onclick="exportFullReportExcel()">
+                📊 كشف شامل Excel
+              </button>
+              <button class="btn btn-danger" onclick="exportFullReportPDF()">
+                📄 كشف شامل PDF
+              </button>
+            </div>
+          </div>
+        </div>
+
+      </main>
+
+      <!-- Footer -->
+      <footer class="app-footer">
+        <p>© 2024 نظام حضور وغياب الطلاب - د. هشام هاشم</p>
+        <p>كلية العلوم - جامعة طنطا - قسم الفيزياء - مقرر الحرارة</p>
+      </footer>
+    </div>
+
+    <!-- =============================================
+         Create Lecture Modal
+         ============================================= -->
+    <div id="modal-create-lecture" class="modal-backdrop hidden">
+      <div class="modal">
+        <div class="modal-header">
+          <h2>➕ إنشاء محاضرة جديدة</h2>
+          <button class="modal-close" onclick="closeModal('modal-create-lecture')">&times;</button>
+        </div>
+        <div class="modal-body">
+          <form id="create-lecture-form" onsubmit="createLecture(event)">
+            <div class="form-group">
+              <label class="form-label" for="lec-title">عنوان المحاضرة</label>
+              <input type="text" id="lec-title" class="form-input" value="مقرر الحرارة" placeholder="مقرر الحرارة">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lec-date">تاريخ المحاضرة *</label>
+              <input type="date" id="lec-date" class="form-input" required dir="ltr">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lec-start">وقت البدء (اختياري)</label>
+              <input type="time" id="lec-start" class="form-input" dir="ltr">
+            </div>
+            <div class="form-group">
+              <label class="form-label" for="lec-end">وقت الانتهاء (اختياري)</label>
+              <input type="time" id="lec-end" class="form-input" dir="ltr">
+            </div>
+            <div id="create-lecture-error"></div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" onclick="createLecture(event)">✅ إنشاء وتوليد QR</button>
+          <button class="btn btn-outline" onclick="closeModal('modal-create-lecture')">إلغاء</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- =============================================
+         QR Display Modal
+         ============================================= -->
+    <div id="modal-qr" class="modal-backdrop hidden">
+      <div class="modal" style="max-width: 600px;">
+        <div class="modal-header">
+          <h2>📱 كود QR للمحاضرة</h2>
+          <button class="modal-close" onclick="closeModal('modal-qr')">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div class="qr-display">
+            <div id="qr-canvas"></div>
+            <div class="qr-info">
+              <p id="qr-lecture-title"></p>
+              <p id="qr-lecture-date"></p>
+            </div>
+          </div>
+          <div class="alert alert-info mt-20">
+            <span class="alert-icon">💡</span>
+            <span>اعرض هذا الكود على شاشة العرض في قاعة المحاضرة ليقوم الطلاب بمسحه</span>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary" onclick="downloadQR()">📥 تحميل الكود</button>
+          <button class="btn btn-outline" onclick="fullscreenQR()">🖥️ ملء الشاشة</button>
+          <button class="btn btn-outline" onclick="closeModal('modal-qr')">إغلاق</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <script src="/admin.js"></script>
+</body>
+</html>

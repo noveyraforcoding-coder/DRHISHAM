@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="نظام تسجيل حضور الطلاب - مقرر الحرارة - د. هشام هاشم - كلية العلوم جامعة طنطا">
+  <meta name="theme-color" content="#0a1628">
+  <title>تسجيل الحضور | مقرر الحرارة - د. هشام هاشم</title>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Tajawal:wght@400;500;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Styles -->
+  <link rel="stylesheet" href="/style.css">
+  
+
+</head>
+<body>
+  <div class="page-wrapper">
+    <!-- Header -->
+    <header class="app-header">
+      <div class="header-content">
+        <div class="header-brand">
+          <div class="header-logo">ح</div>
+          <div class="header-titles">
+            <h1>تسجيل الحضور</h1>
+            <span class="subtitle">كلية العلوم - جامعة طنطا</span>
+          </div>
+        </div>
+        <div class="header-nav">
+          <a href="/admin.html" class="nav-link">🔐 لوحة التحكم</a>
+        </div>
+      </div>
+    </header>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <!-- Main Content -->
+    <main class="app-container">
+      
+      <!-- Step 1: Scanner -->
+      <section id="step-scanner" class="hero-section">
+        <h1>📱 مسح كود الحضور</h1>
+        <p class="hero-subtitle">د. هشام هاشم - قسم الفيزياء</p>
+        <span class="hero-course">🔬 مقرر الحرارة (Thermodynamics)</span>
+
+        <div class="scanner-wrapper">
+          <div class="alert alert-warning text-center" style="margin-top: 30px;">
+            <span class="alert-icon" style="font-size: 40px; display: block; margin-bottom: 15px;">📷</span>
+            <h3 style="margin-bottom: 10px;">عفواً، لا توجد بيانات محاضرة!</h3>
+            <p>لتحضير نفسك، قم بفتح تطبيق الكاميرا في هاتفك وقم بمسح كود الـ QR المعروض على الشاشة في قاعة المحاضرة.</p>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 2: Student Form (appears after successful scan) -->
+      <section id="step-form" class="student-form-section hidden">
+        <div class="card">
+          <div class="card-header">
+            <h3><span class="icon">✍️</span> بيانات الطالب</h3>
+          </div>
+          
+          <div id="lecture-info-banner" class="alert alert-info mb-20">
+            <span class="alert-icon">📋</span>
+            <div>
+              <strong id="scanned-lecture-title">محاضرة</strong><br>
+              <small id="scanned-lecture-date">التاريخ</small>
+            </div>
+          </div>
+
+          <form id="attendance-form" onsubmit="submitAttendance(event)">
+            <div class="form-group">
+              <label class="form-label" for="input-name">الاسم بالكامل (الاسم الرباعي) *</label>
+              <input 
+                type="text" 
+                id="input-name" 
+                class="form-input" 
+                placeholder="مثال: أحمد محمد علي حسن"
+                required
+                minlength="5"
+                autocomplete="name"
+              >
+              <span class="form-hint">أدخل اسمك الرباعي كما هو مسجل بالكلية</span>
+            </div>
+
+            <div class="form-group">
+              <label class="form-label" for="input-national-id">الرقم القومي *</label>
+              <input 
+                type="text" 
+                id="input-national-id" 
+                class="form-input" 
+                placeholder="أدخل الرقم القومي (14 رقم)"
+                required
+                pattern="\d{14}"
+                maxlength="14"
+                inputmode="numeric"
+                autocomplete="off"
+                dir="ltr"
+                style="text-align: left; letter-spacing: 2px; font-family: var(--font-mono);"
+              >
+              <span class="form-hint">الرقم القومي المكون من 14 رقم الموجود على البطاقة الشخصية</span>
+            </div>
+
+            <div id="form-status" class="mb-20"></div>
+
+            <button type="submit" id="btn-submit" class="btn btn-success btn-lg btn-block">
+              ✅ تسجيل الحضور
+            </button>
+
+            <button type="button" class="btn btn-ghost btn-block mt-10" onclick="goBackToScanner()">
+              ← مسح كود آخر
+            </button>
+          </form>
+        </div>
+      </section>
+
+      <!-- Step 3: Success Result -->
+      <section id="step-success" class="student-form-section hidden">
+        <div class="card text-center">
+          <div class="scan-result-icon success">✅</div>
+          <h2 style="margin-bottom: 12px;">تم تسجيل حضورك بنجاح!</h2>
+          <p id="success-details" style="color: var(--text-secondary); font-size: 0.9rem;"></p>
+          <div class="mt-30">
+            <button class="btn btn-outline btn-block" onclick="goBackToScanner()">
+              🔄 مسح كود محاضرة أخرى
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- Step 4: Already Submitted -->
+      <section id="step-already" class="student-form-section hidden">
+        <div class="card text-center">
+          <div class="scan-result-icon error">⚠️</div>
+          <h2 style="margin-bottom: 12px;">تم تسجيل حضورك مسبقاً</h2>
+          <p style="color: var(--text-secondary); font-size: 0.9rem;">
+            لقد سجلت حضورك لهذه المحاضرة بالفعل من هذا الجهاز.
+          </p>
+          <div class="mt-30">
+            <button class="btn btn-outline btn-block" onclick="goBackToScanner()">
+              🔄 مسح كود محاضرة أخرى
+            </button>
+          </div>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="app-footer">
+      <p>© 2024 نظام حضور وغياب الطلاب - د. هشام هاشم</p>
+      <p>كلية العلوم - جامعة طنطا - قسم الفيزياء - مقرر الحرارة</p>
+    </footer>
+  </div>
+
+  <script src="/app.js"></script>
+</body>
+</html>
