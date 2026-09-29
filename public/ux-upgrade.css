@@ -1,0 +1,118 @@
+/* ux-upgrade.css — load AFTER style.css. Fixes bugs + improves usability. */
+
+/* 1. Fix undefined/duplicated things in the original */
+:root{
+  --surface:#0d1117;
+  --text-tertiary:#9aa4b0;          /* was #6e7681: failed contrast on dark */
+  --focus:#7eb8f0;
+  --tap:44px;
+}
+html{ -webkit-text-size-adjust:100%; }
+body{ min-height:100vh; min-height:100dvh; }
+h1,h2,h3,h4,h5,h6{ letter-spacing:0; }   /* negative tracking breaks Arabic letter joins */
+
+/* 2. Accessibility: focus, motion, skip link */
+:focus-visible{ outline:3px solid var(--focus); outline-offset:2px; border-radius:6px; }
+.form-input:focus-visible{ outline:none; }
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{ animation-duration:.01ms!important; transition-duration:.01ms!important; scroll-behavior:auto!important; }
+}
+.skip-link{ position:absolute; top:-60px; right:12px; background:var(--primary-500); color:#fff; padding:10px 16px; border-radius:8px; z-index:2000; }
+.skip-link:focus{ top:12px; }
+
+/* 3. Calmer surfaces: dashboards shouldn't jump on hover */
+.card,.stat-card{ background:var(--surface-800); border:1px solid var(--border-color); box-shadow:none; backdrop-filter:none; -webkit-backdrop-filter:none; }
+.card:hover,.stat-card:hover{ transform:none; background:var(--surface-800); border-color:rgba(126,184,240,.35); box-shadow:none; }
+.stat-card::before{ display:none; }
+.stat-value{ background:none; -webkit-text-fill-color:currentColor; color:var(--text-primary); font-size:2rem; font-variant-numeric:tabular-nums; }
+.stat-icon{ box-shadow:none; }
+.stat-icon.blue{ background:rgba(43,108,176,.25); } .stat-icon.green{ background:rgba(40,167,69,.22); }
+.stat-icon.gold{ background:rgba(212,168,67,.22); } .stat-icon.red{ background:rgba(220,53,69,.22); }
+.header-titles h1{ background:none; -webkit-text-fill-color:currentColor; color:var(--text-primary); }
+.app-header{ background:rgba(10,22,40,.95); padding-top:max(12px,env(safe-area-inset-top)); }
+
+/* 4. Buttons & inputs: comfortable touch targets */
+.btn,.tab-btn,.nav-link,.modal-close{ min-height:var(--tap); }
+.btn-sm{ min-height:38px; }
+.btn:active:not(:disabled){ transform:scale(.98); }
+.btn.is-busy{ pointer-events:none; opacity:.7; }
+.form-input{ min-height:var(--tap); font-size:16px; } /* 16px stops iOS zoom-on-focus */
+select.form-input{ appearance:none; padding-inline-end:40px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='8' fill='none' stroke='%238b949e' stroke-width='2'%3E%3Cpath d='M1 1l5 5 5-5'/%3E%3C/svg%3E");
+  background-repeat:no-repeat; background-position:left 14px center; }
+.pw-wrap{ position:relative; }
+.pw-wrap .form-input{ padding-inline-start:52px; }
+.pw-toggle{ position:absolute; left:6px; top:50%; transform:translateY(-50%); width:40px; height:40px; border:0; border-radius:8px; background:transparent; color:var(--text-secondary); cursor:pointer; font-size:1.1rem; }
+.pw-toggle:hover{ background:var(--surface-600); color:var(--text-primary); }
+
+/* 5. Tabs: sticky under header, clear active state, scrollable on phones */
+.tabs{ position:sticky; top:76px; z-index:50; background:var(--surface-800); border:1px solid var(--border-color); box-shadow:none; scrollbar-width:none; }
+.tabs::-webkit-scrollbar{ display:none; }
+.tab-btn{ flex:1 0 auto; }
+.tab-btn.active{ background:var(--primary-500); box-shadow:none; }
+.tab-content{ animation:none; }
+
+/* 6. Lectures list: scannable rows */
+.lecture-item{ gap:16px; border-inline-start:4px solid var(--primary-400); }
+.lecture-item:hover{ background:var(--surface-700); }
+.lecture-info .lecture-title{ font-size:1.02rem; }
+.lecture-actions{ flex-wrap:wrap; }
+
+/* 7. Tables: sticky header, zebra, readable numbers */
+.table-wrapper{ max-height:70vh; overflow:auto; }
+.data-table thead th{ position:sticky; top:0; z-index:1; text-transform:none; letter-spacing:0; font-size:.85rem; color:var(--text-primary); }
+.data-table tbody tr:nth-child(even){ background:rgba(255,255,255,.025); }
+.data-table td,.data-table th{ font-variant-numeric:tabular-nums; }
+.data-table td:first-child{ white-space:nowrap; }
+
+/* 8. Charts */
+.chart-bars{ overflow-x:auto; padding-top:30px; }
+.chart-bar{ background:var(--primary-400); }
+
+/* 9. Modals: proper dialogs; bottom sheet on phones */
+.modal-backdrop{ background:rgba(0,0,0,.75); backdrop-filter:none; overscroll-behavior:contain; }
+.modal{ background:var(--surface-800); backdrop-filter:none; }
+.modal-footer{ flex-wrap:wrap; }
+.modal-close:focus-visible{ outline-offset:0; }
+
+/* 10. QR: large, high-contrast, projector-friendly */
+.qr-display canvas,.qr-display img{ max-width:min(320px,80vw); padding:20px; }
+#qr-canvas{ display:flex; justify-content:center; }
+body.qr-fullscreen #modal-qr .modal{ max-width:none; width:100vw; height:100dvh; max-height:none; border-radius:0; display:flex; flex-direction:column; justify-content:center; }
+body.qr-fullscreen #modal-qr .qr-display canvas,
+body.qr-fullscreen #modal-qr .qr-display img{ max-width:min(78vh,90vw); }
+body.qr-fullscreen #modal-qr .alert{ display:none; }
+
+/* 11. Toasts sit at the bottom on phones (thumb zone) */
+.toast-container{ width:min(92vw,420px); }
+@media (max-width:768px){
+  .toast-container{ top:auto; bottom:max(16px,env(safe-area-inset-bottom)); }
+  .tabs{ top:0; position:static; }
+  .app-container{ padding-inline:14px; }
+  .grid-2,.grid-3{ grid-template-columns:1fr; }
+  .section-title .actions .btn{ flex:1; }
+  .modal-backdrop{ align-items:flex-end; padding:0; }
+  .modal{ max-width:100%; margin:0; border-radius:20px 20px 0 0; max-height:92dvh; padding-bottom:env(safe-area-inset-bottom); animation:sheetIn .25s ease; }
+  .modal-footer .btn{ flex:1 1 45%; }
+  .header-nav{ border-top:0; margin-top:0; padding-top:0; }
+}
+@keyframes sheetIn{ from{transform:translateY(40px);opacity:0} to{transform:none;opacity:1} }
+@media (max-width:480px){
+  .stats-grid{ grid-template-columns:1fr 1fr; gap:10px; }
+  .stat-card{ flex-direction:column; gap:10px; padding:14px; }
+  .stat-value{ font-size:1.5rem; }
+  .card{ padding:16px; }
+}
+
+/* 12. Empty & loading states */
+.empty-state{ padding:40px 20px; }
+.skeleton{ background:linear-gradient(90deg,var(--surface-700),var(--surface-600),var(--surface-700)); background-size:200% 100%; animation:shimmer 1.3s infinite; border-radius:8px; min-height:18px; }
+@keyframes shimmer{ to{ background-position:-200% 0; } }
+
+/* 13. Footer + print */
+.app-footer{ background:var(--surface); }
+@media print{
+  .skip-link,.toast-container,.pw-toggle{ display:none!important; }
+  .table-wrapper{ max-height:none; overflow:visible; }
+  .data-table tbody tr:nth-child(even){ background:#f7f7f7; }
+}
